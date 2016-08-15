@@ -23,11 +23,21 @@ class Edge
 end
 
 class Position
-  attr_reader :x, :y
+  attr_accessor :x, :y
   def initialize(x_position, y_position)
     @x = x_position
     @y = y_position
   end
+
+  def move(vec)
+    self.x += vec.x
+    self.y += vec.y
+  end
+
+  def subtract(position)
+    Vec2.new(x - position.x, y - position.y)
+  end
+
 end
 
 class Curtain
@@ -36,24 +46,33 @@ class Curtain
     @points = []
 
     points << Particle.new(Position.new(100, 100))
-    points << Particle.new(Position.new(400, 100))
+    points << Particle.new(Position.new(400, 300))
+    points << Particle.new(Position.new(100, 400))
+    points << Particle.new(Position.new(400, 400))
 
-    @lines = [Edge.new(points[0], points[1])]
+    @lines = []
+
+    lines << Edge.new(points[0], points[1])
+    lines << Edge.new(points[2], points[3])
+
+    lines << Edge.new(points[0], points[2])
+    lines << Edge.new(points[1], points[3])
 
   end
 
   def reposition
-    m_x = [points.length] # Current positions
-    m_oldx = [points.length] # Previous positions
+    # m_x = [points.length] # Current positions
+    # m_oldx = [points.length] # Previous positions
+    #
+    # points.length.times do |i|
+    #   x = points[i].position.x
+    #   temp = x
+    #   oldx = points[i].prev_position.x
+    #   a = 1 # lul
+    #   x += x - oldx + a * TIMESTEP * TIMESTEP
+    #   oldx = temp
+    # end
 
-    points.length.times do |i|
-      x = points[i].position.x
-      temp = x
-      oldx = points[i].prev_position.x
-      a = 1 # lul
-      x += x - oldx + a * TIMESTEP * TIMESTEP
-      oldx = temp
-    end
   end
 
   # // Verlet integration step
@@ -72,19 +91,20 @@ class Curtain
     20.times do
       lines.length.times do |i|
         e = lines[i]
-        x1 = e.start_point.position.x
+        x1 = e.start_point.position
         # puts "first_x1: #{x1}"
-        x2 = e.end_point.position.x
+        x2 = e.end_point.position
         # puts "first_x2: #{x2}"
-        delta = x2 - x1
+        delta = x2.subtract(x1)
         # puts "delta: #{delta}"
-        delta_length = Math.sqrt(delta * delta)
+        # delta_length = Math.sqrt(delta * delta)
+        delta_length = delta.magnitude
         # puts "delta_length: #{delta_length}"
         diff = (delta_length - e.rest_length) / delta_length
         # puts "diff: #{diff}"
-        x1 += delta * 0.5 * diff
+        e.start_point.position.move(delta.scale(0.5 * diff))
         # puts "second_x1: #{x1}"
-        x2 -= delta * 0.5 * diff
+        e.end_point.position.move(delta.scale(-0.5 * diff))
         # puts "second_x2: #{x2}"
       end
     end
