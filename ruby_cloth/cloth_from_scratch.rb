@@ -44,17 +44,17 @@ class Curtain
   attr_reader :points, :lines
   def initialize()
     @points = []
-
+    # four points/corners
     points << Particle.new(Position.new(100, 100))
     points << Particle.new(Position.new(400, 300))
     points << Particle.new(Position.new(100, 400))
     points << Particle.new(Position.new(400, 400))
 
     @lines = []
-
+    # horizontal lines
     lines << Edge.new(points[0], points[1])
     lines << Edge.new(points[2], points[3])
-
+    # vertical lines
     lines << Edge.new(points[0], points[2])
     lines << Edge.new(points[1], points[3])
 
@@ -130,7 +130,7 @@ class Curtain
 
   def update
     reposition
-    satisfy_constraints
+    # satisfy_constraints
   end
 
 end
