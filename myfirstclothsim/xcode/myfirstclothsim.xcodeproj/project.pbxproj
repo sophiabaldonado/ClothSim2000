@@ -69,6 +69,7 @@
 		EC58494B1D66857C0007803B /* render.frag in Resources */ = {isa = PBXBuildFile; fileRef = EC5849481D66857C0007803B /* render.frag */; };
 		EC58494C1D66857C0007803B /* render.vert in Resources */ = {isa = PBXBuildFile; fileRef = EC5849491D66857C0007803B /* render.vert */; };
 		EC58494D1D66857C0007803B /* update.vert in Resources */ = {isa = PBXBuildFile; fileRef = EC58494A1D66857C0007803B /* update.vert */; };
+		ECDEB5F71D6BA27F00DF0A8E /* newUpdate.vert in Resources */ = {isa = PBXBuildFile; fileRef = ECDEB5F61D6BA27F00DF0A8E /* newUpdate.vert */; };
 		F0E673C853DC4D16810EF5B2 /* b2Island.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C6E90EB15C44CF9AB935980 /* b2Island.cpp */; };
 /* End PBXBuildFile section */
 
@@ -184,6 +185,7 @@
 		EC5849491D66857C0007803B /* render.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = render.vert; path = ../resources/render.vert; sourceTree = "<group>"; };
 		EC58494A1D66857C0007803B /* update.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = update.vert; path = ../resources/update.vert; sourceTree = "<group>"; };
 		EC7DDF73662B4A5DB8764BAE /* b2CollideEdge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2CollideEdge.cpp; path = ../blocks/Box2D/src/Box2D/Collision/b2CollideEdge.cpp; sourceTree = "<group>"; };
+		ECDEB5F61D6BA27F00DF0A8E /* newUpdate.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = newUpdate.vert; path = ../resources/newUpdate.vert; sourceTree = "<group>"; };
 		EFAC65C785694E8E8A8AEDB0 /* b2PrismaticJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = b2PrismaticJoint.h; path = ../blocks/Box2D/src/Box2D/Dynamics/Joints/b2PrismaticJoint.h; sourceTree = "<group>"; };
 		F46994E3A2E741379AC5D58F /* b2EdgeShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2EdgeShape.cpp; path = ../blocks/Box2D/src/Box2D/Collision/Shapes/b2EdgeShape.cpp; sourceTree = "<group>"; };
 		F5BE50C15A544703BDC37892 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
@@ -322,6 +324,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ECDEB5F61D6BA27F00DF0A8E /* newUpdate.vert */,
 				EC5849481D66857C0007803B /* render.frag */,
 				EC5849491D66857C0007803B /* render.vert */,
 				EC58494A1D66857C0007803B /* update.vert */,
@@ -535,6 +538,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				262460819D10482F8CAA908C /* CinderApp.icns in Resources */,
+				ECDEB5F71D6BA27F00DF0A8E /* newUpdate.vert in Resources */,
 				EC58494D1D66857C0007803B /* update.vert in Resources */,
 				EC58494B1D66857C0007803B /* render.frag in Resources */,
 				EC58494C1D66857C0007803B /* render.vert in Resources */,
