@@ -1,7 +1,8 @@
+#include "practice.hpp"
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
-#include "cinder/params/Params.h"
+#include "cinder/Easing.h"
 
 
 using namespace ci;
@@ -9,111 +10,76 @@ using namespace ci::app;
 using namespace std;
 //using namespace gl;
 
-const uint32_t POINTS_X				= 50;
-const uint32_t POINTS_Y				= 50;
-const uint32_t POINTS_TOTAL			= (POINTS_X * POINTS_Y);
-const uint32_t CONNECTIONS_TOTAL	= (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
-
-const uint32_t POSITION_INDEX		= 0;
-const uint32_t VELOCITY_INDEX		= 1;
-const uint32_t CONNECTION_INDEX		= 2;
 
 class myfirstclothsimApp : public App {
-  public:
-//	void setup() override;
-	void mouseDown( MouseEvent event ) override;
-	void update() override;
-	void draw() override;
-    
-    void setupBuffers();
-    void setupGlsl();
-    void setupParams();
-    
-    gl::BatchRef        mRect;
-    gl::GlslProgRef		mGlsl;
+public:
+    void	setup() override;
+    void	draw() override;
     
     CameraPersp         mCam;
-    float               mCurrentCamRotation;
-    uint32_t			mIterationsPerFrame, mIterationIndex;
-    bool				mDrawPoints, mDrawLines, mUpdate;
-    
-    ci::params::InterfaceGlRef			mParams;
-    
+    gl::BatchRef        mRect;
+    gl::GlslProgRef		mGlsl;
 };
 
-myfirstclothsimApp::myfirstclothsimApp()
-: mIterationsPerFrame( 16 ), mIterationIndex( 0 ),
-    mDrawPoints( true ), mDrawLines( true ),
-    mCurrentCamRotation( 0.0f ), mUpdate( true ),
-    mCam( getWindowWidth(), getWindowHeight(), 20.0f, 0.0f, 1000.0f )
+void myfirstclothsimApp::setup()
 {
-    vec3 eye = vec3( sin( mCurrentCamRotation ) * 140.0f, 0,
-                    cos( mCurrentCamRotation ) * 140.0f );
-    vec3 target = vec3( 0.0f );
-    mCam.lookAt(eye, target );
-    
-    setup Glsl();
-    setupBuffers();
-    setupPrams();
-}
-
-void myfirstclothsimApp::setupBuffers()
-{
-    mCam.lookAt( vec3( 3, 2, 4 ), vec3( 0 ) );
+    mCam.lookAt( vec3( 3, 2, 3 ), vec3( 0 ) );
     
     mGlsl = gl::GlslProg::create( gl::GlslProg::Format()
-        .vertex(	CI_GLSL( 150,
+      .vertex(	CI_GLSL( 150,
             uniform mat4	ciModelViewProjection;
             in vec4			ciPosition;
-            in vec4         ciColor;
-            out vec4        Color;
+            in vec2			ciTexCoord0;
+            out vec2		TexCoord0;
                                                     
+            float offset( vec2 uv )
+            {
+                return ( sin( uv.x * 15.0 ) +
+                         cos( uv.y * 7.0f + uv.x * 13.0f ) ) * 0.1f;
+            }
                                                     
             void main( void ) {
-                for( int i = 0; i < 1; ++i ) {
-                    gl_Position	= ciModelViewProjection * ciPosition + i;
-                    Color = ciColor;
-                }
+                vec4 pos = ciPosition;
+                pos.y = offset( ciTexCoord0 );
+                gl_Position	= ciModelViewProjection * pos;
+                TexCoord0 = ciTexCoord0;
             }
-        ) )
-        .fragment(	CI_GLSL( 150,
-            in vec4             Color;
-            out vec4			oColor;
+                                                    ) )
+       .fragment(	CI_GLSL( 150,
+                    uniform float		uCheckSize;
                                                     
-            void main( void ) {
-                oColor = Color;
-            }
-        ) )
-    );
+                    in vec2				TexCoord0;
+                    out vec4			oColor;
+                                                    
+                    vec4 checker( vec2 uv )
+                    {
+                        float v = floor( uCheckSize * uv.x ) +
+                        floor( uCheckSize * uv.y );
+                        if( mod( v, 2.0 ) < 1.0 )
+                            return vec4( 0.45, 0, 0.5, 1 );
+                        else
+                            return vec4( 0, 0, 0, 1 );
+                    }
+                                                    
+                    void main( void ) {
+                        oColor = checker( TexCoord0 );
+                    }
+    ) ) );
     
-    auto sheet = geom::Rect().colors( true );
-                                    
-//    cube.colors( ColorAf( 0.45f, 0.0f , 0.5f ),
-//                 ColorAf( 0.45f, 0.0f , 0.5f ),
-//                 ColorAf( 0.45f, 0.0f , 0.5f ),
-//                 ColorAf( 0.45f, 0.0f , 0.5f ) );
-    mRect = gl::Batch::create( sheet, mGlsl );
+    auto plane = geom::Plane().subdivisions( ivec2( 30 ) );
+    mRect = gl::Batch::create( plane, mGlsl );
     
     gl::enableDepthWrite();
     gl::enableDepthRead();
 }
 
-void myfirstclothsimApp::mouseDown( MouseEvent event )
-{
-}
-
-void myfirstclothsimApp::update()
-{
-}
-
 void myfirstclothsimApp::draw()
 {
-    mat4 pz = gl::getModelViewProjection();
-//    cout << pz << endl;
-    gl::clear( Color( 0.2f, 0.2f, 0.2f ) );
+    gl::clear( Color( 0.2f, 0.2f, 0.3f ) );
     gl::setMatrices( mCam );
+    
+    mGlsl->uniform( "uCheckSize", 30.0f );
     mRect->draw();
 }
 
-
-CINDER_APP( myfirstclothsimApp, RendererGl )
+CINDER_APP( myfirstclothsimApp, RendererGl() );
