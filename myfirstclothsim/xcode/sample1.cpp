@@ -20,7 +20,7 @@ const uint32_t POINTS_TOTAL			= (POINTS_X * POINTS_Y);
 const uint32_t CONNECTIONS_TOTAL	= (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
 
 const uint32_t POSITION_INDEX		= 0;
-const uint32_t VELOCITY_INDEX		= 1;
+const uint32_t PREV_POSITION_INDEX	= 1;
 const uint32_t CONNECTION_INDEX		= 2;
 
 class ClothSimulationApp : public App {
@@ -126,8 +126,8 @@ void ClothSimulationApp::setupBuffers()
             {
                 // bind and explain the vbo to your vao so that it knows how to distribute vertices to your shaders.
                 gl::ScopedBuffer scopeBuffer( mVelocities[i] );
-                gl::vertexAttribPointer( VELOCITY_INDEX, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) 0 );
-                gl::enableVertexAttribArray( VELOCITY_INDEX );
+                gl::vertexAttribPointer( PREV_POSITION_INDEX, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) 0 );
+                gl::enableVertexAttribArray( PREV_POSITION_INDEX );
             }
             // buffer the connections
             mConnections[i] = gl::Vbo::create( GL_ARRAY_BUFFER, connections.size() * sizeof(ivec4), connections.data(), GL_STATIC_DRAW );
@@ -170,7 +170,7 @@ void ClothSimulationApp::setupGlsl()
     // know which attributes should be captured by Transform FeedBack.
     std::vector<std::string> feedbackVaryings({
         "tf_position_mass",
-        "tf_velocity"
+        "tf_prev_position_mass"
     });
     
     gl::GlslProg::Format updateFormat;
@@ -217,7 +217,7 @@ void ClothSimulationApp::update()
         // Now bind our opposing buffers to the correct index
         // so that we can capture the values coming from the shader
         gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, POSITION_INDEX, mPositions[mIterationIndex & 1] );
-        gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, VELOCITY_INDEX, mVelocities[mIterationIndex & 1] );
+        gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, PREV_POSITION_INDEX, mVelocities[mIterationIndex & 1] );
         
         // Begin Transform feedback with the correct primitive,
         // In this case, we want GL_POINTS, because each vertex
