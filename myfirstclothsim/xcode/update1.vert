@@ -60,11 +60,11 @@ void main(void)
     float mass = position_mass.w;     // the mass of our vertex
     
     // new
-//    vec3 old_position = velocity;             // im switching the buffer name
-//    vec3 vel = (pos - old_position) * damping; // calculate velocity using current/prev position
+    vec3 old_position = velocity.xyz;             // im switching the buffer name
+    vec3 vel = (pos - old_position) * damping; // calculate velocity using current/prev position
     
     // old
-    vec3 vel = vec3(velocity);
+//    vec3 vel = vec3(velocity);
 
     vec3 F = gravity * mass - damping * vel;  // F is the force on the mass
     bool fixed_node = true;        // Becomes false when force is applied
@@ -108,9 +108,9 @@ void main(void)
     // Write the outputs
     // new
 //    tf_position_mass = vec4(pos + vel + acc * timestep, mass);
-//    tf_velocity = old_position;
+    tf_velocity = position_mass;
     
     // old
     tf_position_mass = vec4(pos + displacement, mass);
-    tf_velocity = vec4(new_vel.x, new_vel.y, new_vel.z, 0);
+//    tf_velocity = vec4(new_vel.x, new_vel.y, new_vel.z, 0);
 }
