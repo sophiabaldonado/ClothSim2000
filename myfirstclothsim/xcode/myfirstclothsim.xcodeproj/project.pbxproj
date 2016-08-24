@@ -70,6 +70,8 @@
 		EC58494C1D66857C0007803B /* render.vert in Resources */ = {isa = PBXBuildFile; fileRef = EC5849491D66857C0007803B /* render.vert */; };
 		EC58494D1D66857C0007803B /* update.vert in Resources */ = {isa = PBXBuildFile; fileRef = EC58494A1D66857C0007803B /* update.vert */; };
 		ECDEB5F71D6BA27F00DF0A8E /* newUpdate.vert in Resources */ = {isa = PBXBuildFile; fileRef = ECDEB5F61D6BA27F00DF0A8E /* newUpdate.vert */; };
+		ECDEB5FA1D6D1A2800DF0A8E /* sample1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ECDEB5F81D6D1A2800DF0A8E /* sample1.cpp */; };
+		ECDEB5FC1D6D1B3700DF0A8E /* update1.vert in Resources */ = {isa = PBXBuildFile; fileRef = ECDEB5FB1D6D1B3700DF0A8E /* update1.vert */; };
 		F0E673C853DC4D16810EF5B2 /* b2Island.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C6E90EB15C44CF9AB935980 /* b2Island.cpp */; };
 /* End PBXBuildFile section */
 
@@ -186,6 +188,9 @@
 		EC58494A1D66857C0007803B /* update.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = update.vert; path = ../resources/update.vert; sourceTree = "<group>"; };
 		EC7DDF73662B4A5DB8764BAE /* b2CollideEdge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2CollideEdge.cpp; path = ../blocks/Box2D/src/Box2D/Collision/b2CollideEdge.cpp; sourceTree = "<group>"; };
 		ECDEB5F61D6BA27F00DF0A8E /* newUpdate.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = newUpdate.vert; path = ../resources/newUpdate.vert; sourceTree = "<group>"; };
+		ECDEB5F81D6D1A2800DF0A8E /* sample1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sample1.cpp; sourceTree = "<group>"; };
+		ECDEB5F91D6D1A2800DF0A8E /* sample1.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sample1.hpp; sourceTree = "<group>"; };
+		ECDEB5FB1D6D1B3700DF0A8E /* update1.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = update1.vert; sourceTree = "<group>"; };
 		EFAC65C785694E8E8A8AEDB0 /* b2PrismaticJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = b2PrismaticJoint.h; path = ../blocks/Box2D/src/Box2D/Dynamics/Joints/b2PrismaticJoint.h; sourceTree = "<group>"; };
 		F46994E3A2E741379AC5D58F /* b2EdgeShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2EdgeShape.cpp; path = ../blocks/Box2D/src/Box2D/Collision/Shapes/b2EdgeShape.cpp; sourceTree = "<group>"; };
 		F5BE50C15A544703BDC37892 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
@@ -237,6 +242,8 @@
 			children = (
 				EC3460B01D5E310F00E5A2BC /* practice.cpp */,
 				EC1AC6F11D67AA8A007F5588 /* sample.cpp */,
+				ECDEB5F81D6D1A2800DF0A8E /* sample1.cpp */,
+				ECDEB5F91D6D1A2800DF0A8E /* sample1.hpp */,
 				EC1AC6F21D67AA8A007F5588 /* sample.hpp */,
 				C25F1F3249FF414F9F56CEDC /* myfirstclothsimApp.cpp */,
 			);
@@ -328,6 +335,7 @@
 				EC5849481D66857C0007803B /* render.frag */,
 				EC5849491D66857C0007803B /* render.vert */,
 				EC58494A1D66857C0007803B /* update.vert */,
+				ECDEB5FB1D6D1B3700DF0A8E /* update1.vert */,
 				81C2F39FEB8E4B4E99084F8D /* CinderApp.icns */,
 				4DD81594D7FD4F30BD893D69 /* Info.plist */,
 			);
@@ -540,6 +548,7 @@
 				262460819D10482F8CAA908C /* CinderApp.icns in Resources */,
 				ECDEB5F71D6BA27F00DF0A8E /* newUpdate.vert in Resources */,
 				EC58494D1D66857C0007803B /* update.vert in Resources */,
+				ECDEB5FC1D6D1B3700DF0A8E /* update1.vert in Resources */,
 				EC58494B1D66857C0007803B /* render.frag in Resources */,
 				EC58494C1D66857C0007803B /* render.vert in Resources */,
 			);
@@ -558,6 +567,7 @@
 				68770AE50BE44C56801953B1 /* b2CollideEdge.cpp in Sources */,
 				718F8A2B899040BF97613973 /* b2CollidePolygon.cpp in Sources */,
 				DC659ED8808642F09D3666B5 /* b2Collision.cpp in Sources */,
+				ECDEB5FA1D6D1A2800DF0A8E /* sample1.cpp in Sources */,
 				6FA7192ED2464AA2B4A50276 /* b2Distance.cpp in Sources */,
 				3A662AEAC71C4C898DD6676F /* b2DynamicTree.cpp in Sources */,
 				B7CDBC15F89F4410A4B63F87 /* b2TimeOfImpact.cpp in Sources */,

@@ -59,6 +59,9 @@ vec3 calcRayIntersection( vec3 pos )
 
 void main(void)
 {
+    
+    
+    
     vec3 p = position_mass.xyz;    // p can be our position
     p = calcRayIntersection( p );
     vec3 pp = position_mass.xyz;    // pp can be our previous position
