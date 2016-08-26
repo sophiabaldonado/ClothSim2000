@@ -26,10 +26,10 @@ out vec4 tf_prev_position_mass;
 uniform float timestep = 0.07;
 
 // The global spring constant
-uniform float spring = 7.1;
+uniform float spring = 9.1;
 
 // Gravity
-uniform vec3 gravity = vec3(0.0, -0.08, 0.0);
+uniform vec3 gravity = vec3(0.0, -0.1, 0.0);
 
 // Global damping constant
 uniform float damping = 2.8;
@@ -37,20 +37,40 @@ uniform float damping = 2.8;
 // Spring resting length
 uniform float rest_length = 0.88;
 
+float s = spring;
+
 vec3 calcRayIntersection( vec3 pos )
-{
+{   // this is for pinching/pulling on cloth
     vec3 retPos = pos;
-    if (rayPosition.x > pos.x - 1 &&
-        rayPosition.x < pos.x + 1 &&
-        rayPosition.y > pos.y - 1 &&
-        rayPosition.y < pos.y + 1 &&
-        rayPosition.z > pos.z - 1 &&
-        rayPosition.z < pos.z + 1 &&
-        connection[0] != -1 && connection[1] != -1 &&
-        connection[2] != -1 && connection[3] != -1) {
-        retPos = vec3(rayPosition.x, rayPosition.y, rayPosition.z);
-    }
+//    if (rayPosition.x > pos.x - 1 &&
+//        rayPosition.x < pos.x + 1 &&
+//        rayPosition.y > pos.y - 1 &&
+//        rayPosition.y < pos.y + 1 &&
+//        rayPosition.z > pos.z - 1.5 &&
+//        rayPosition.z < pos.z + 1.5 &&
+//        connection[0] != -1 && connection[1] != -1 &&
+//        connection[2] != -1 && connection[3] != -1) {
+//        
+//
+//        retPos = vec3(rayPosition.x, rayPosition.y, rayPosition.z);
+
+//    } else {
+        
+        // see if the pos is in the sphere
+    vec3 center = rayPosition;
+        vec3 moveDirection = (pos - center);
+        float l = length(moveDirection);
+        float radius = 2.0;
+        
+        if (l < radius) {
+            retPos = (pos + normalize(moveDirection) * (radius - l) );
+        }
+//  }
+
+    
     return retPos;
+    
+    // let go of the cloth if the mouse goes too far away so it's not super stretchy?
 }
 
 void main(void)
@@ -63,9 +83,6 @@ void main(void)
     vec3 old_position = prev_position_mass.xyz;             // im switching the buffer name
     vec3 vel = (pos - old_position) * damping; // calculate velocity using current&prev position
 
-    // old
-//    vec3 vel = vec3(velocity);
-
     vec3 F = gravity * mass - damping * vel;  // F is the force on the mass
     bool fixed_node = true;        // Becomes false when force is applied
 
@@ -73,24 +90,19 @@ void main(void)
     for( int i = 0; i < 4; i++) {
         if( connection[i] != -1 ) {
             // q is the position of the other vertex
-            vec3 q = texelFetch(tex_position, connection[i]).xyz; // - 0.01f; add this to make wind!?
-            vec3 d = q - pos;
-            float x = length(d);
-            F += -spring * (rest_length - x) * normalize(d);
+            vec3 q = texelFetch(tex_position, connection[i]).xyz;
+            vec3 delta = q - pos;
+            float point_distance = length(delta);
+            vec3 correction = delta * ( 1 - rest_length / point_distance );
+            vec3 correctionHalf = correction * 0.5;
+//            pos += correctionHalf;
+//            q += -correctionHalf;
+
+//            float diff = (point_distance - rest_length) / point_distance;
+            F += -s * (rest_length - point_distance) * normalize(delta);
             fixed_node = false;
         }
     }
-//    for( int i = 0; i < 4; i++) {
-//        if( connection[i] != -1 ) {
-//            // q is the position of the other vertex
-//            vec3 q = texelFetch(tex_position, connection[i]).xyz;
-//            vec3 delta = q - pos;
-//            vec3 point_distance = length(delta);
-////            float diff = (point_distance - rest_length) / point_distance;
-//            F += -spring * (rest_length - point_distance) * normalize(delta);
-//            fixed_node = false;
-//        }
-//    }
 
     // If this is a fixed node, reset force to zero
     if( fixed_node ) {
@@ -98,11 +110,7 @@ void main(void)
     }
 
     //new
-//    vec3 vel = (position - old_position) * damping;
-//    old_position = pos;
-//    acc = vec3( 0.0 );
 //    pos += vel + acc * timestep;
-
 
 
     //old
@@ -110,19 +118,16 @@ void main(void)
     vec3 acc = F / mass;
     // Displacement
     vec3 displacement = vel * timestep + 0.5 * acc * timestep * timestep;
-//     Final velocity
-    vec3 new_vel = vel + acc * timestep;
-//     Constrain the absolute value of the displacement per step
-    displacement = clamp(displacement, vec3(-25.0), vec3(25.0));
+    // Constrain the absolute value of the displacement per step
+//    displacement = clamp(displacement, vec3(-25.0), vec3(25.0));
 
+    
+//    vec3 displacement = pos + (pos - old_position) * acc * timestep;
 
 
     // Write the outputs
-    // new
 //    tf_position_mass = vec4(pos + vel + acc * timestep, mass);
     tf_prev_position_mass = position_mass;
 
-    // old
     tf_position_mass = vec4(pos + displacement, mass);
-//    tf_velocity = vec4(new_vel.x, new_vel.y, new_vel.z, 0);
 }

@@ -307,19 +307,19 @@ void ClothSimulationApp::setupParams()
     mParams->addParam( "Damping Constant", &dampingConst )
     .min( 1.5f ).max( 25.0f ).updateFn(
                                        [&](){
-                                           mUpdateGlsl->uniform( "c", dampingConst );
+                                           mUpdateGlsl->uniform( "damping", dampingConst );
                                        });
     mParams->addParam( "Spring Constant", &springConstant )
     .min( 0.1f ).max( 17.0f ).updateFn(
                                        [&](){
-                                           mUpdateGlsl->uniform( "k", springConstant );
+                                           mUpdateGlsl->uniform( "spring", springConstant );
                                        });
     mParams->addButton( "Eject Button",
                        [&](){
                            restLength = 2.0;
                            mUpdateGlsl->uniform( "rest_length", restLength );
                            dampingConst = 5.0;
-                           mUpdateGlsl->uniform( "c", dampingConst );
+                           mUpdateGlsl->uniform( "damping", dampingConst );
                        });
     mParams->addButton( "Reset",
                        [&](){
@@ -328,9 +328,9 @@ void ClothSimulationApp::setupParams()
                            restLength = 0.88;
                            mUpdateGlsl->uniform( "rest_length", restLength );
                            dampingConst = 2.8;
-                           mUpdateGlsl->uniform( "c", dampingConst );
+                           mUpdateGlsl->uniform( "damping", dampingConst );
                            springConstant = 7.1;
-                           mUpdateGlsl->uniform( "k", springConstant );
+                           mUpdateGlsl->uniform( "spring", springConstant );
                        });
     mParams->addSeparator();
     mParams->addText( "Render Params" );
