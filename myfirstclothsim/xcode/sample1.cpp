@@ -14,8 +14,8 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-const uint32_t POINTS_X				= 25;
-const uint32_t POINTS_Y				= 25;
+const uint32_t POINTS_X				= 20;
+const uint32_t POINTS_Y				= 20;
 const uint32_t POINTS_TOTAL			= (POINTS_X * POINTS_Y);
 const uint32_t CONNECTIONS_TOTAL	= (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
 
@@ -39,7 +39,7 @@ public:
     void setupParams();
     
     std::array<gl::VaoRef, 2>			mVaos;
-    std::array<gl::VboRef, 2>			mPositions, mVelocities, mConnections;
+    std::array<gl::VboRef, 2>			mPositions, mPrevPositions, mConnections;
     std::array<gl::BufferTextureRef, 2>	mPositionBufTexs;
     gl::VboRef							mLineIndices;
     gl::GlslProgRef						mUpdateGlsl, mRenderGlsl;
@@ -75,7 +75,7 @@ void ClothSimulationApp::setupBuffers()
     int i, j;
     
     std::array<vec4, POINTS_TOTAL> positions;
-    std::array<vec4, POINTS_TOTAL> velocities;
+    std::array<vec4, POINTS_TOTAL> prevPositions;
     std::array<ivec4, POINTS_TOTAL> connections;
     
     int n = 0;
@@ -89,8 +89,8 @@ void ClothSimulationApp::setupBuffers()
                                 ( fj - 0.5f ) * (float)POINTS_Y,
                                 0.6f * sinf( fi ) * cosf( fj ),
                                 1.0f );
-            // zero out velocities
-            velocities[n] = vec4( 0.0f );
+            // zero out prevPositions
+            prevPositions[n] = vec4( 0.0f );
             // to create connections we'll use an integer buffer.
             // The value -1 refers to the fact that there's no
             // connection. This helps for the edge cases of the plane
@@ -121,11 +121,11 @@ void ClothSimulationApp::setupBuffers()
                 gl::vertexAttribPointer( POSITION_INDEX, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) 0 );
                 gl::enableVertexAttribArray( POSITION_INDEX );
             }
-            // buffer the velocities
-            mVelocities[i] = gl::Vbo::create( GL_ARRAY_BUFFER, velocities.size() * sizeof(vec4), velocities.data(), GL_STATIC_DRAW );
+            // buffer the prev positions
+            mPrevPositions[i] = gl::Vbo::create( GL_ARRAY_BUFFER, prevPositions.size() * sizeof(vec4), prevPositions.data(), GL_STATIC_DRAW );
             {
                 // bind and explain the vbo to your vao so that it knows how to distribute vertices to your shaders.
-                gl::ScopedBuffer scopeBuffer( mVelocities[i] );
+                gl::ScopedBuffer scopeBuffer( mPrevPositions[i] );
                 gl::vertexAttribPointer( PREV_POSITION_INDEX, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) 0 );
                 gl::enableVertexAttribArray( PREV_POSITION_INDEX );
             }
@@ -217,7 +217,7 @@ void ClothSimulationApp::update()
         // Now bind our opposing buffers to the correct index
         // so that we can capture the values coming from the shader
         gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, POSITION_INDEX, mPositions[mIterationIndex & 1] );
-        gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, PREV_POSITION_INDEX, mVelocities[mIterationIndex & 1] );
+        gl::bindBufferBase( GL_TRANSFORM_FEEDBACK_BUFFER, PREV_POSITION_INDEX, mPrevPositions[mIterationIndex & 1] );
         
         // Begin Transform feedback with the correct primitive,
         // In this case, we want GL_POINTS, because each vertex
@@ -258,7 +258,9 @@ void ClothSimulationApp::draw()
 void ClothSimulationApp::mouseDown( MouseEvent event )
 {
     if( event.isRightDown() )
-        mCamUi.mouseDrag( event.getPos(), true, false, false );
+//        mCamUi.mouseDrag( event.getPos(), true, false, false );
+        mUpdateGlsl->uniform( "trigger", true );
+//        updateRayPosition( event.getPos(), true );
     else
         updateRayPosition( event.getPos(), true );
 }
@@ -287,7 +289,7 @@ void ClothSimulationApp::updateRayPosition( const ci::ivec2 &mousePos, bool useD
 void ClothSimulationApp::setupParams()
 {
     static vec3 gravity = vec3( 0.0, -0.08, 0.0 );
-    static float restLength = 0.88;
+    static float restLength = 2.0;
     static float dampingConst = 2.8;
     static float springConstant = 7.1;
     
