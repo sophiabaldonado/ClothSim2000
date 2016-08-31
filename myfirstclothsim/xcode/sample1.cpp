@@ -58,13 +58,13 @@ public:
 
 ClothSimulationApp::ClothSimulationApp()
 : mIterationsPerFrame( 36 ), mIterationIndex( 0 ),
-mDrawPoints( true ), mDrawLines( true ),
-mCurrentCamRotation( 0.0f ), mUpdate( true ),
+mDrawPoints( true ), mDrawLines( false ),
+mCurrentCamRotation( -1.0f ), mUpdate( true ),
 mDrawMesh( true ), mCam( getWindowWidth(),
 getWindowHeight(), 20.0f, 0.01f, 1000.0f )
 {
     mCamUi = CameraUi( &mCam );
-    vec3 eye = vec3( sin( mCurrentCamRotation ) * 140.0f, 0,
+    vec3 eye = vec3( sin( mCurrentCamRotation ) * 140.0f, 40,
                     cos( mCurrentCamRotation ) * 140.0f );
     vec3 target = vec3( 0.0f );
     mCam.lookAt( eye, target );
@@ -148,51 +148,48 @@ void ClothSimulationApp::setupBuffers()
     mPositionBufTexs[0] = gl::BufferTexture::create( mPositions[0], GL_RGBA32F );
     mPositionBufTexs[1] = gl::BufferTexture::create( mPositions[1], GL_RGBA32F );
     
-    if( mDrawMesh ) {
-        int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
-        int num_tris = num_cells * 2;
-        int num_indices = num_tris * 3;
+    // create indices to draw tris between cloth points
+    int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
+    int num_tris = num_cells * 2;
+    int num_indices = num_tris * 3;
 
-        mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(int), nullptr, GL_STATIC_DRAW );
-        
-        auto pIndices = (int *) mLineIndices->mapReplace();
-        for (j = 0; j < POINTS_Y; j++) {
-            for (i = 0; i < POINTS_X - 1; i++) {
-    #define GET_VERTEX(x, y) ((x) + ((y) * POINTS_X))
-                *pIndices++ = GET_VERTEX(i, j);
-                *pIndices++ = GET_VERTEX(i + 1, j);
-                *pIndices++ = GET_VERTEX(i + 1, j + 1);
-                
-                *pIndices++ = GET_VERTEX(i, j);
-                *pIndices++ = GET_VERTEX(i + 1, j + 1);
-                *pIndices++ = GET_VERTEX(i, j + 1);
-    #undef GET_VERTEX
-            }
-        }
-        mLineIndices->unmap();
-    } else if( mDrawLines ) {
+    mMeshIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(int), nullptr, GL_STATIC_DRAW );
     
-        int lines = (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
-        // create the indices to draw links between the cloth points
-        mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, lines * 2 * sizeof(int), nullptr, GL_STATIC_DRAW );
-        
-        auto e = (int *) mLineIndices->mapReplace();
-        for (j = 0; j < POINTS_Y; j++) {
-            for (i = 0; i < POINTS_X - 1; i++) {
-                *e++ = i + j * POINTS_X;
-                *e++ = 1 + i + j * POINTS_X;
-            }
+    auto pIndices = (int *) mMeshIndices->mapReplace();
+    for (j = 0; j < POINTS_Y; j++) {
+        for (i = 0; i < POINTS_X - 1; i++) {
+    #define GET_VERTEX(x, y) ((x) + ((y) * POINTS_X))
+            *pIndices++ = GET_VERTEX(i, j);
+            *pIndices++ = GET_VERTEX(i + 1, j);
+            *pIndices++ = GET_VERTEX(i + 1, j + 1);
+            
+            *pIndices++ = GET_VERTEX(i, j);
+            *pIndices++ = GET_VERTEX(i + 1, j + 1);
+            *pIndices++ = GET_VERTEX(i, j + 1);
+    #undef GET_VERTEX
         }
-        
-        for (i = 0; i < POINTS_X; i++) {
-            for (j = 0; j < POINTS_Y - 1; j++) {
-                *e++ = i + j * POINTS_X;
-                *e++ = POINTS_X + i + j * POINTS_X;
-            }
-        }
-        mLineIndices->unmap();
     }
+    mMeshIndices->unmap();
 
+    // create the indices to draw links between the cloth points
+    int lines = (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
+    mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, lines * 2 * sizeof(int), nullptr, GL_STATIC_DRAW );
+    
+    auto e = (int *) mLineIndices->mapReplace();
+    for (j = 0; j < POINTS_Y; j++) {
+        for (i = 0; i < POINTS_X - 1; i++) {
+            *e++ = i + j * POINTS_X;
+            *e++ = 1 + i + j * POINTS_X;
+        }
+    }
+    
+    for (i = 0; i < POINTS_X; i++) {
+        for (j = 0; j < POINTS_Y - 1; j++) {
+            *e++ = i + j * POINTS_X;
+            *e++ = POINTS_X + i + j * POINTS_X;
+        }
+    }
+    mLineIndices->unmap();
 }
 
 void ClothSimulationApp::setupGlsl()
@@ -287,9 +284,10 @@ void ClothSimulationApp::draw()
         gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
     }
     if( mDrawMesh ) {
-        gl::ScopedBuffer scopeBuffer( mLineIndices );
+        gl::ScopedBuffer scopeBuffer( mMeshIndices );
         gl::drawElements( GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0 );
-    } else if ( mDrawLines ) {
+    }
+    if ( mDrawLines ) {
         gl::ScopedBuffer scopeBuffer( mLineIndices );
         gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
     }
@@ -299,18 +297,19 @@ void ClothSimulationApp::draw()
 
 void ClothSimulationApp::mouseDown( MouseEvent event )
 {
-    if( event.isRightDown() )
+    if( event.isRightDown() ) {
 //        mCamUi.mouseDrag( event.getPos(), true, false, false );
         mUpdateGlsl->uniform( "trigger", true );
-//        updateRayPosition( event.getPos(), true );
-    else
         updateRayPosition( event.getPos(), true );
+    } else {
+        updateRayPosition( event.getPos(), true );
+    }
 }
 
 void ClothSimulationApp::mouseDrag( MouseEvent event )
 {
     if( event.isRightDown() )
-        mCamUi.mouseDrag( event.getPos(), true, false, false );
+        updateRayPosition( event.getPos(), true );
     else
         updateRayPosition( event.getPos(), true );
 }
@@ -378,9 +377,9 @@ void ClothSimulationApp::setupParams()
                        });
     mParams->addSeparator();
     mParams->addText( "Render Params" );
-    mParams->addParam( "Draw Lines", &mDrawLines );
     mParams->addParam( "Draw Points", &mDrawPoints );
     mParams->addParam( "Draw Mesh", &mDrawMesh );
+    mParams->addParam( "Draw Lines", &mDrawLines );
     mParams->addText( "Right Mouse Button Rotates" );
 }
 
