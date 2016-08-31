@@ -38,7 +38,7 @@ uniform float damping = 0.1;
 // Spring resting length
 uniform float rest_length = 1.0;
 
-bool t = false;
+bool t = true;
 
 vec3 calcRayIntersection( vec3 pos )
 {   // this is for pinching/pulling on cloth with trigger

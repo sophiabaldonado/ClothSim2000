@@ -44,6 +44,7 @@ public:
     std::array<gl::VboRef, 2>			mPositions, mPrevPositions, mConnections;
     std::array<gl::BufferTextureRef, 2>	mPositionBufTexs;
     gl::VboRef							mLineIndices;
+    gl::VboRef							mMeshIndices;
     gl::GlslProgRef						mUpdateGlsl, mRenderGlsl;
     
     CameraPersp							mCam;
@@ -52,9 +53,9 @@ public:
     uint32_t							mIterationsPerFrame, mIterationIndex;
     bool								mDrawPoints, mDrawLines, mUpdate;
     
-    TriMeshRef                          mMesh;
+    gl::VboMeshRef                      mMesh;
     bool                                mDrawMesh;
-    std::array<vec4, POINTS_TOTAL>      mCloth;
+    vector<int>                         mIndices;
     
     ci::params::InterfaceGlRef			mParams;
 };
@@ -79,8 +80,6 @@ getWindowHeight(), 20.0f, 0.01f, 1000.0f )
 
 void ClothSimulationApp::setupBuffers()
 {
-    
-    mMesh = TriMesh::create( TriMesh::Format().positions() );
     
     int i, j;
     
@@ -156,22 +155,74 @@ void ClothSimulationApp::setupBuffers()
     int lines = (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
     // create the indices to draw links between the cloth points
     mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, lines * 2 * sizeof(int), nullptr, GL_STATIC_DRAW );
+
     
-    auto e = (int *) mLineIndices->mapReplace();
+    int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
+    int num_tris = num_cells * 2;
+    int num_indices = num_tris * 3;
+
+    mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(int), nullptr, GL_STATIC_DRAW );
+    
+    auto pIndices = (int *) mLineIndices->mapReplace();
     for (j = 0; j < POINTS_Y; j++) {
         for (i = 0; i < POINTS_X - 1; i++) {
-            *e++ = i + j * POINTS_X;
-            *e++ = 1 + i + j * POINTS_X;
-        }
-    }
-    
-    for (i = 0; i < POINTS_X; i++) {
-        for (j = 0; j < POINTS_Y - 1; j++) {
-            *e++ = i + j * POINTS_X;
-            *e++ = POINTS_X + i + j * POINTS_X;
+#define GET_VERTEX(x, y) ((x) + ((y) * POINTS_X))
+            *pIndices++ = GET_VERTEX(i, j);
+            *pIndices++ = GET_VERTEX(i + 1, j);
+            *pIndices++ = GET_VERTEX(i + 1, j + 1);
+            
+            *pIndices++ = GET_VERTEX(i, j);
+            *pIndices++ = GET_VERTEX(i + 1, j + 1);
+            *pIndices++ = GET_VERTEX(i, j + 1);
+#undef GET_VERTEX
         }
     }
     mLineIndices->unmap();
+
+    
+    
+    
+//    auto e = (int *) mLineIndices->mapReplace();
+//    for (j = 0; j < POINTS_Y; j++) {
+//        for (i = 0; i < POINTS_X - 1; i++) {
+//            *e++ = i + j * POINTS_X;
+//            *e++ = 1 + i + j * POINTS_X;
+//        }
+//    }
+//    
+//    for (i = 0; i < POINTS_X; i++) {
+//        for (j = 0; j < POINTS_Y - 1; j++) {
+//            *e++ = i + j * POINTS_X;
+//            *e++ = POINTS_X + i + j * POINTS_X;
+//        }
+//    }
+//    mLineIndices->unmap();
+    
+//    //   mMesh = gl::VboMesh::create( POINTS_TOTAL, GL_TRIANGLES, { gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::POSITION, 3 ) }, mIndices.size(), GL_UNSIGNED_SHORT );
+//    
+//    
+//    int m = 0;
+//    int colSteps = POINTS_Y * 2;
+//    int rowSteps = POINTS_X - 1;
+//    vector<int> indices;
+//    for( int r = 0; r < rowSteps; r++ ) {
+//        for( int c = 0; c < colSteps; c++ ) {
+//            int t = c + r * colSteps;
+//            
+//            if( c == colSteps -1 ) {
+//                indices.push_back( m );
+//            } else {
+//                indices.push_back( m );
+//                
+//                if( t % 2 == 0 ) {
+//                    m += POINTS_Y;
+//                } else {
+//                    ( r % 2 == 0 ) ? m -= ( POINTS_Y - 1 ): n -= ( POINTS_Y + 1 );
+//                }
+//                
+//            }
+//        }
+//    }
 }
 
 void ClothSimulationApp::setupGlsl()
@@ -284,65 +335,20 @@ void ClothSimulationApp::draw()
     gl::setMatrices( mCam );
     gl::setDefaultShaderVars();
     
-//    if( mDrawPoints ) {
-//        gl::pointSize( 4.0f);
-//        gl::drawArrays( GL_POINTS, 0, POINTS_TOTAL );
-////        gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
-//    }
+    int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
+    int num_tris = num_cells * 2;
+    int num_indices = num_tris * 3;
+    
+    if( mDrawPoints ) {
+        gl::pointSize( 4.0f);
+        gl::drawArrays( GL_POINTS, 0, POINTS_TOTAL );
+//        gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
+    }
     if( mDrawLines ) {
         gl::ScopedBuffer scopeBuffer( mLineIndices );
-        gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
+//        gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
+        gl::drawElements( GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0 );
     }
-    
-//    gl::ScopedActiveTexture scopeTex( )
-//    gl::Texture::create( loadImage( loadAsset( "logo.png" ) ) );
-    
-    if( mDrawMesh ) {
-        gl::enableWireframe();
-        gl::color( Color( 0.2f, 0.2f, 0.5f ) );
-        gl::draw( *mMesh );
-        gl::disableWireframe();
-    }
-//        // reset normals (which where written to last frame)
-//        std::vector<Particle>::iterator particle;
-//        for(particle = particles.begin(); particle != particles.end(); particle++)
-//        {
-//            (*particle).resetNormal();
-//        }
-//    
-//     //   create smooth per particle normals by adding up all the (hard) triangle normals that each particle is part of
-//        for(int x = 0; x<POINTS_X-1; x++)
-//        {
-//            for(int y=0; y<POINTS_Y-1; y++)
-//            {
-//                Vec3 normal = calcTriangleNormal(getParticle(x+1,y),getParticle(x,y),getParticle(x,y+1));
-//                getParticle(x+1,y)->addToNormal(normal);
-//                getParticle(x,y)->addToNormal(normal);
-//                getParticle(x,y+1)->addToNormal(normal);
-//                
-//                normal = calcTriangleNormal(getParticle(x+1,y+1),getParticle(x+1,y),getParticle(x,y+1));
-//                getParticle(x+1,y+1)->addToNormal(normal);
-//                getParticle(x+1,y)->addToNormal(normal);
-//                getParticle(x,y+1)->addToNormal(normal);
-//            }
-//        }
-//        
-//        glBegin(GL_TRIANGLES);
-//        for(int x = 0; x<num_particles_width-1; x++)
-//        {
-//            for(int y=0; y<num_particles_height-1; y++)
-//            {
-//                Vec3 color(0,0,0);
-//                if (x%2) // red and white color is interleaved according to which column number
-//                    color = Vec3(0.6f,0.2f,0.2f);
-//                else
-//                    color = Vec3(1.0f,1.0f,1.0f);
-//                
-//                drawTriangle(getParticle(x+1,y),getParticle(x,y),getParticle(x,y+1),color);
-//                drawTriangle(getParticle(x+1,y+1),getParticle(x+1,y),getParticle(x,y+1),color);
-//            }
-//        }
-//        glEnd();
     
     mParams->draw();
 }
@@ -381,9 +387,9 @@ void ClothSimulationApp::updateRayPosition( const ci::ivec2 &mousePos, bool useD
 void ClothSimulationApp::setupParams()
 {
     static vec3 gravity = vec3( 0.0, -0.08, 0.0 );
-    static float restLength = 2.0;
-    static float dampingConst = 2.8;
-    static float springConstant = 7.1;
+    static float restLength = 1.0;
+    static float dampingConst = 0.01;
+    static float springConstant = 50;
     
     mParams = params::InterfaceGl::create( "Cloth Simulation", ivec2( 250, 250 ) );
     mParams->addText( "Update Params" );
@@ -410,9 +416,9 @@ void ClothSimulationApp::setupParams()
                                        });
     mParams->addButton( "Eject Button",
                        [&](){
-                           restLength = 2.0;
+                           restLength = 1.0;
                            mUpdateGlsl->uniform( "rest_length", restLength );
-                           dampingConst = 5.0;
+                           dampingConst = 0.01;
                            mUpdateGlsl->uniform( "damping", dampingConst );
                        });
     mParams->addButton( "Reset",
