@@ -302,6 +302,7 @@ void ClothSimulationApp::mouseDown( MouseEvent event )
         mUpdateGlsl->uniform( "trigger", true );
         updateRayPosition( event.getPos(), true );
     } else {
+        mUpdateGlsl->uniform( "trigger", false );
         updateRayPosition( event.getPos(), true );
     }
 }
