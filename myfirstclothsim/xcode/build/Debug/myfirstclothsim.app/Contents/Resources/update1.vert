@@ -27,13 +27,13 @@ out vec4 tf_prev_position_mass;
 uniform float timestep = 0.05;
 
 // The global spring constant
-uniform float spring = 9.1;
+uniform float spring = 50;
 
 // Gravity
-uniform vec3 gravity = vec3(0.0, -0.2, 0.0);
+uniform vec3 gravity = vec3(0.0, -0.08, 0.0);
 
 // Global damping constant
-uniform float damping = 0.01;
+uniform float damping = 0.1;
 
 // Spring resting length
 uniform float rest_length = 1.0;
@@ -41,7 +41,7 @@ uniform float rest_length = 1.0;
 bool t = false;
 
 vec3 calcRayIntersection( vec3 pos )
-{   // this is for pinching/pulling on cloth
+{   // this is for pinching/pulling on cloth with trigger
     vec3 retPos = pos;
     if (t) {
         if (rayPosition.x > pos.x - 1 &&
@@ -52,7 +52,6 @@ vec3 calcRayIntersection( vec3 pos )
             rayPosition.z < pos.z + 1.5 &&
             connection[0] != -1 && connection[1] != -1 &&
             connection[2] != -1 && connection[3] != -1) {
-            
 
             retPos = vec3(rayPosition.x, rayPosition.y, rayPosition.z);
         }
@@ -61,14 +60,12 @@ vec3 calcRayIntersection( vec3 pos )
     vec3 center = rayPosition;
     vec3 moveDirection = (pos - center);
     float l = length(moveDirection);
-    float radius = 2.0;
+    float radius = 3.0;
         
     if (l < radius) {  // see if the pos is in the sphere
             retPos = (pos + normalize(moveDirection) * (radius - l) );
         }
   }
-
-    
     return retPos;
     
     // let go of the cloth if the mouse goes too far away so it's not super stretchy?
@@ -78,7 +75,7 @@ void main(void)
 {
     vec3 pos = position_mass.xyz;               // pos can be our position
     pos = calcRayIntersection( pos );
-    float mass = position_mass.w;               // the mass of our vertex
+    float mass = position_mass.w;               // the mass of our vertex, right now is always 1
 
     vec3 old_position = prev_position_mass.xyz; // save the previous position
     vec3 vel = (pos - old_position) * damping;  // calculate velocity using current&prev position
@@ -93,12 +90,6 @@ void main(void)
             vec3 q = texelFetch(tex_position, connection[i]).xyz;
             vec3 delta = q - pos;
             float point_distance = length(delta);
-            vec3 correction = delta * ( 1 - rest_length / point_distance );
-            vec3 correctionHalf = correction * 0.5;
-//            pos += correctionHalf;
-//            q += -correctionHalf;
-
-//            float diff = (point_distance - rest_length) / point_distance;
             F += -spring * (rest_length - point_distance) * normalize(delta);
             fixed_node = false;
         }
@@ -108,8 +99,6 @@ void main(void)
     if( fixed_node ) {
         F = vec3(0.0);
     }
-
-//    pos += vel + acc * timestep;
 
 
     // Acceleration due to force
@@ -124,8 +113,6 @@ void main(void)
 
 
     // Write the outputs
-//    tf_position_mass = vec4(pos + vel + acc * timestep, mass);
     tf_prev_position_mass = position_mass;
-
     tf_position_mass = vec4(pos + displacement, mass);
 }

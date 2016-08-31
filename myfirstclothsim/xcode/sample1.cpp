@@ -9,13 +9,15 @@
 #include "cinder/gl/Vbo.h"
 #include "cinder/gl/BufferTexture.h"
 #include "cinder/gl/GlslProg.h"
+#include "cinder/TriMesh.h"
+
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-const uint32_t POINTS_X				= 20;
-const uint32_t POINTS_Y				= 20;
+const uint32_t POINTS_X				= 40;
+const uint32_t POINTS_Y				= 40;
 const uint32_t POINTS_TOTAL			= (POINTS_X * POINTS_Y);
 const uint32_t CONNECTIONS_TOTAL	= (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
 
@@ -50,14 +52,19 @@ public:
     uint32_t							mIterationsPerFrame, mIterationIndex;
     bool								mDrawPoints, mDrawLines, mUpdate;
     
+    TriMeshRef                          mMesh;
+    bool                                mDrawMesh;
+    std::array<vec4, POINTS_TOTAL>      mCloth;
+    
     ci::params::InterfaceGlRef			mParams;
 };
 
 ClothSimulationApp::ClothSimulationApp()
-: mIterationsPerFrame( 16 ), mIterationIndex( 0 ),
+: mIterationsPerFrame( 36 ), mIterationIndex( 0 ),
 mDrawPoints( true ), mDrawLines( true ),
 mCurrentCamRotation( 0.0f ), mUpdate( true ),
-mCam( getWindowWidth(), getWindowHeight(), 20.0f, 0.01f, 1000.0f )
+mDrawMesh( true ), mCam( getWindowWidth(),
+getWindowHeight(), 20.0f, 0.01f, 1000.0f )
 {
     mCamUi = CameraUi( &mCam );
     vec3 eye = vec3( sin( mCurrentCamRotation ) * 140.0f, 0,
@@ -72,6 +79,9 @@ mCam( getWindowWidth(), getWindowHeight(), 20.0f, 0.01f, 1000.0f )
 
 void ClothSimulationApp::setupBuffers()
 {
+    
+    mMesh = TriMesh::create( TriMesh::Format().positions() );
+    
     int i, j;
     
     std::array<vec4, POINTS_TOTAL> positions;
@@ -230,6 +240,36 @@ void ClothSimulationApp::update()
         // to tell OpenGL that we're finished capturing vertices
         gl::endTransformFeedback();
     }
+    
+    
+
+//    ci::TriMesh *mesh = mMesh.get();
+//    vec3 mProf = vec3(2, 2, 2);
+//    mat4 mFrames = mat4(0.0);
+//    mat4 mFrames1 = mat4(1.0);
+//    
+//    mesh->clear();
+////    std::array<vec3, POINTS_TOTAL> mPs;
+//    
+//    for( int i = 0; i < mPositions.size() - 1; ++i ) {
+//        mat4 mat0 = mFrames;
+//        mat4 mat1 = mFrames1;
+//        
+//        float r0 = sin( (float)(i + 0)/(float)(mPositions.size() - 1)*3.141592f );
+//        float r1 = sin( (float)(i + 1)/(float)(mPositions.size() - 1)*3.141592f );
+//        float rs0 = (1 - 1)*r0 + 1;
+//        float rs1 = (1 - 1)*r1 + 1;
+//        
+//        for( int ci = 0; ci < mProf.size(); ++ci ) {
+//            int idx0 = ci;
+//            int idx1 = (ci == (mProf.size() - 1)) ? 0 : ci + 1;
+//            vec3 P0 = vec3( mat0 * vec4(mProf[idx0]*rs0, 1) );
+//            vec3 P1 = vec3( mat0 * vec4(mProf[idx1]*rs0, 1) );
+//            vec3 P2 = vec3( mat1 * vec4(mProf[idx1]*rs1, 1) );
+//            vec3 P3 = vec3( mat1 * vec4(mProf[idx0]*rs1, 1) );
+//            addQuadToMesh( *mesh, P0, P3, P2, P1 );
+//        }
+//    }
 }
 
 void ClothSimulationApp::draw()
@@ -244,14 +284,66 @@ void ClothSimulationApp::draw()
     gl::setMatrices( mCam );
     gl::setDefaultShaderVars();
     
-    if( mDrawPoints ) {
-        gl::pointSize( 4.0f);
-        gl::drawArrays( GL_POINTS, 0, POINTS_TOTAL );
-    }
+//    if( mDrawPoints ) {
+//        gl::pointSize( 4.0f);
+//        gl::drawArrays( GL_POINTS, 0, POINTS_TOTAL );
+////        gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
+//    }
     if( mDrawLines ) {
         gl::ScopedBuffer scopeBuffer( mLineIndices );
         gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
     }
+    
+//    gl::ScopedActiveTexture scopeTex( )
+//    gl::Texture::create( loadImage( loadAsset( "logo.png" ) ) );
+    
+    if( mDrawMesh ) {
+        gl::enableWireframe();
+        gl::color( Color( 0.2f, 0.2f, 0.5f ) );
+        gl::draw( *mMesh );
+        gl::disableWireframe();
+    }
+//        // reset normals (which where written to last frame)
+//        std::vector<Particle>::iterator particle;
+//        for(particle = particles.begin(); particle != particles.end(); particle++)
+//        {
+//            (*particle).resetNormal();
+//        }
+//    
+//     //   create smooth per particle normals by adding up all the (hard) triangle normals that each particle is part of
+//        for(int x = 0; x<POINTS_X-1; x++)
+//        {
+//            for(int y=0; y<POINTS_Y-1; y++)
+//            {
+//                Vec3 normal = calcTriangleNormal(getParticle(x+1,y),getParticle(x,y),getParticle(x,y+1));
+//                getParticle(x+1,y)->addToNormal(normal);
+//                getParticle(x,y)->addToNormal(normal);
+//                getParticle(x,y+1)->addToNormal(normal);
+//                
+//                normal = calcTriangleNormal(getParticle(x+1,y+1),getParticle(x+1,y),getParticle(x,y+1));
+//                getParticle(x+1,y+1)->addToNormal(normal);
+//                getParticle(x+1,y)->addToNormal(normal);
+//                getParticle(x,y+1)->addToNormal(normal);
+//            }
+//        }
+//        
+//        glBegin(GL_TRIANGLES);
+//        for(int x = 0; x<num_particles_width-1; x++)
+//        {
+//            for(int y=0; y<num_particles_height-1; y++)
+//            {
+//                Vec3 color(0,0,0);
+//                if (x%2) // red and white color is interleaved according to which column number
+//                    color = Vec3(0.6f,0.2f,0.2f);
+//                else
+//                    color = Vec3(1.0f,1.0f,1.0f);
+//                
+//                drawTriangle(getParticle(x+1,y),getParticle(x,y),getParticle(x,y+1),color);
+//                drawTriangle(getParticle(x+1,y+1),getParticle(x+1,y),getParticle(x,y+1),color);
+//            }
+//        }
+//        glEnd();
+    
     mParams->draw();
 }
 
