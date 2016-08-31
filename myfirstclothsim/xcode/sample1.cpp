@@ -51,11 +51,7 @@ public:
     CameraUi							mCamUi;
     float								mCurrentCamRotation;
     uint32_t							mIterationsPerFrame, mIterationIndex;
-    bool								mDrawPoints, mDrawLines, mUpdate;
-    
-    gl::VboMeshRef                      mMesh;
-    bool                                mDrawMesh;
-    vector<int>                         mIndices;
+    bool								mDrawPoints, mDrawLines, mDrawMesh, mUpdate;
     
     ci::params::InterfaceGlRef			mParams;
 };
@@ -342,12 +338,14 @@ void ClothSimulationApp::draw()
     if( mDrawPoints ) {
         gl::pointSize( 4.0f);
         gl::drawArrays( GL_POINTS, 0, POINTS_TOTAL );
-//        gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
+        gl::drawElements( GL_TRIANGLE_STRIP, POINTS_X * (POINTS_Y-1) * 2 + POINTS_Y-1, GL_UNSIGNED_INT, 0 );
     }
-    if( mDrawLines ) {
+    if( mDrawMesh ) {
         gl::ScopedBuffer scopeBuffer( mLineIndices );
-//        gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
         gl::drawElements( GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0 );
+    } else if ( mDrawLines ) {
+        gl::ScopedBuffer scopeBuffer( mLineIndices );
+        gl::drawElements( GL_LINES, CONNECTIONS_TOTAL * 2, GL_UNSIGNED_INT, nullptr );
     }
     
     mParams->draw();
@@ -436,6 +434,7 @@ void ClothSimulationApp::setupParams()
     mParams->addText( "Render Params" );
     mParams->addParam( "Draw Lines", &mDrawLines );
     mParams->addParam( "Draw Points", &mDrawPoints );
+    mParams->addParam( "Draw Mesh", &mDrawMesh );
     mParams->addText( "Right Mouse Button Rotates" );
 }
 
