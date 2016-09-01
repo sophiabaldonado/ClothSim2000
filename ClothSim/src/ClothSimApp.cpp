@@ -9,7 +9,6 @@
 #include "cinder/gl/Vbo.h"
 #include "cinder/gl/BufferTexture.h"
 #include "cinder/gl/GlslProg.h"
-#include "cinder/TriMesh.h"
 
 
 using namespace ci;
@@ -298,10 +297,11 @@ void ClothSimApp::draw()
 void ClothSimApp::mouseDown( MouseEvent event )
 {
     if( event.isRightDown() ) {
-        //        mCamUi.mouseDrag( event.getPos(), true, false, false );
+        // I've disabled camera movement to use rightclick for "pull" interaction
+        // mCamUi.mouseDrag( event.getPos(), true, false, false );
         mUpdateGlsl->uniform( "trigger", true );
         updateRayPosition( event.getPos(), true );
-    } else {
+    } else { // left click for "push" interaction
         mUpdateGlsl->uniform( "trigger", false );
         updateRayPosition( event.getPos(), true );
     }
