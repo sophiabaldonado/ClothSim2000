@@ -44,15 +44,17 @@ vec3 calcRayIntersection( vec3 pos )
 {   // this is for pinching/pulling on cloth with trigger
     vec3 retPos = pos;
     if (trigger) {
-        if (rayPosition.x > pos.x - 1 &&
-            rayPosition.x < pos.x + 1 &&
-            rayPosition.y > pos.y - 1 &&
-            rayPosition.y < pos.y + 1 &&
+        // can i pass in a uniform to say that this is VR or laptop?
+        // pass in a number either 1 or .1 and multiple the 0.5 by it
+        // and also multiple the vel down below in the displacement by it
+        if (rayPosition.x > pos.x - 0.5 &&
+            rayPosition.x < pos.x + 0.5 &&
+            rayPosition.y > pos.y - 0.5 &&
+            rayPosition.y < pos.y + 0.5 &&
             rayPosition.z > pos.z - 1.5 &&
             rayPosition.z < pos.z + 1.5 &&
             connection[0] != -1 && connection[1] != -1 &&
             connection[2] != -1 && connection[3] != -1) {
-
             retPos = vec3(rayPosition.x, rayPosition.y, rayPosition.z);
         }
     } else {
@@ -100,8 +102,8 @@ void main(void)
 
     // Acceleration due to force
     vec3 acc = F / mass;
-    
-    vec3 displacement = vel + acc * timestep * timestep;
+    // Displacement
+    vec3 displacement = vel * timestep + acc * timestep * timestep;
 
     // Write the outputs
     tf_prev_position_mass = position_mass;
