@@ -66,6 +66,7 @@
 		EAB421A34C8F4100AE1B8D1D /* ClothSimApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C25F1F3249FF414F9F56CEDC /* ClothSimApp.cpp */; };
 		EC58494B1D66857C0007803B /* render.frag in Resources */ = {isa = PBXBuildFile; fileRef = EC5849481D66857C0007803B /* render.frag */; };
 		EC58494C1D66857C0007803B /* render.vert in Resources */ = {isa = PBXBuildFile; fileRef = EC5849491D66857C0007803B /* render.vert */; };
+		EC9722DC1D77E50E00BFD4B3 /* ClothSimVR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EC9722DA1D77E50E00BFD4B3 /* ClothSimVR.cpp */; };
 		ECDEB5FC1D6D1B3700DF0A8E /* update.vert in Resources */ = {isa = PBXBuildFile; fileRef = ECDEB5FB1D6D1B3700DF0A8E /* update.vert */; };
 		F0E673C853DC4D16810EF5B2 /* b2Island.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C6E90EB15C44CF9AB935980 /* b2Island.cpp */; };
 /* End PBXBuildFile section */
@@ -177,6 +178,8 @@
 		EC5849481D66857C0007803B /* render.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = render.frag; path = ../resources/render.frag; sourceTree = "<group>"; };
 		EC5849491D66857C0007803B /* render.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = render.vert; path = ../resources/render.vert; sourceTree = "<group>"; };
 		EC7DDF73662B4A5DB8764BAE /* b2CollideEdge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2CollideEdge.cpp; path = ../blocks/Box2D/src/Box2D/Collision/b2CollideEdge.cpp; sourceTree = "<group>"; };
+		EC9722DA1D77E50E00BFD4B3 /* ClothSimVR.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ClothSimVR.cpp; path = ../src/ClothSimVR.cpp; sourceTree = "<group>"; };
+		EC9722DB1D77E50E00BFD4B3 /* ClothSimVR.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ClothSimVR.hpp; path = ../src/ClothSimVR.hpp; sourceTree = "<group>"; };
 		ECDEB5FB1D6D1B3700DF0A8E /* update.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = update.vert; path = ../resources/update.vert; sourceTree = "<group>"; };
 		EFAC65C785694E8E8A8AEDB0 /* b2PrismaticJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = b2PrismaticJoint.h; path = ../blocks/Box2D/src/Box2D/Dynamics/Joints/b2PrismaticJoint.h; sourceTree = "<group>"; };
 		F46994E3A2E741379AC5D58F /* b2EdgeShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = b2EdgeShape.cpp; path = ../blocks/Box2D/src/Box2D/Collision/Shapes/b2EdgeShape.cpp; sourceTree = "<group>"; };
@@ -228,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				C25F1F3249FF414F9F56CEDC /* ClothSimApp.cpp */,
+				EC9722DA1D77E50E00BFD4B3 /* ClothSimVR.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -303,6 +307,7 @@
 		29B97315FDCFA39411CA2CEA /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				EC9722DB1D77E50E00BFD4B3 /* ClothSimVR.hpp */,
 				F5BE50C15A544703BDC37892 /* Resources.h */,
 				5E8A47C269074F9FB563494E /* ClothSim_Prefix.pch */,
 			);
@@ -567,6 +572,7 @@
 				A069D4C1315743FB9CD7E343 /* b2ChainAndPolygonContact.cpp in Sources */,
 				D6A9C0F646A54FB1801AD4F4 /* b2CircleContact.cpp in Sources */,
 				18713E9867694F739AE12D47 /* b2Contact.cpp in Sources */,
+				EC9722DC1D77E50E00BFD4B3 /* ClothSimVR.cpp in Sources */,
 				5257C58D99D84DBB9B49D93E /* b2ContactSolver.cpp in Sources */,
 				80AABF15E39043F3A600C5C5 /* b2EdgeAndCircleContact.cpp in Sources */,
 				DAB04C6577F9489F92980C8B /* b2EdgeAndPolygonContact.cpp in Sources */,
