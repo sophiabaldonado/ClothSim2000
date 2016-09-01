@@ -25,9 +25,9 @@ const uint32_t POSITION_INDEX		= 0;
 const uint32_t PREV_POSITION_INDEX	= 1;
 const uint32_t CONNECTION_INDEX		= 2;
 
-class ClothSimulationApp : public App {
+class ClothSimApp : public App {
 public:
-    ClothSimulationApp();
+    ClothSimApp();
     void update() override;
     void draw() override;
     
@@ -56,12 +56,12 @@ public:
     ci::params::InterfaceGlRef			mParams;
 };
 
-ClothSimulationApp::ClothSimulationApp()
+ClothSimApp::ClothSimApp()
 : mIterationsPerFrame( 36 ), mIterationIndex( 0 ),
 mDrawPoints( true ), mDrawLines( false ),
 mCurrentCamRotation( -1.0f ), mUpdate( true ),
 mDrawMesh( true ), mCam( getWindowWidth(),
-getWindowHeight(), 20.0f, 0.01f, 1000.0f )
+                        getWindowHeight(), 20.0f, 0.01f, 1000.0f )
 {
     mCamUi = CameraUi( &mCam );
     vec3 eye = vec3( sin( mCurrentCamRotation ) * 140.0f, 40,
@@ -74,7 +74,7 @@ getWindowHeight(), 20.0f, 0.01f, 1000.0f )
     setupParams();
 }
 
-void ClothSimulationApp::setupBuffers()
+void ClothSimApp::setupBuffers()
 {
     
     int i, j;
@@ -152,13 +152,13 @@ void ClothSimulationApp::setupBuffers()
     int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
     int num_tris = num_cells * 2;
     int num_indices = num_tris * 3;
-
+    
     mMeshIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(int), nullptr, GL_STATIC_DRAW );
     
     auto pIndices = (int *) mMeshIndices->mapReplace();
     for (j = 0; j < POINTS_Y; j++) {
         for (i = 0; i < POINTS_X - 1; i++) {
-    #define GET_VERTEX(x, y) ((x) + ((y) * POINTS_X))
+#define GET_VERTEX(x, y) ((x) + ((y) * POINTS_X))
             *pIndices++ = GET_VERTEX(i, j);
             *pIndices++ = GET_VERTEX(i + 1, j);
             *pIndices++ = GET_VERTEX(i + 1, j + 1);
@@ -166,11 +166,11 @@ void ClothSimulationApp::setupBuffers()
             *pIndices++ = GET_VERTEX(i, j);
             *pIndices++ = GET_VERTEX(i + 1, j + 1);
             *pIndices++ = GET_VERTEX(i, j + 1);
-    #undef GET_VERTEX
+#undef GET_VERTEX
         }
     }
     mMeshIndices->unmap();
-
+    
     // create the indices to draw links between the cloth points
     int lines = (POINTS_X - 1) * POINTS_Y + (POINTS_Y - 1) * POINTS_X;
     mLineIndices = gl::Vbo::create( GL_ELEMENT_ARRAY_BUFFER, lines * 2 * sizeof(int), nullptr, GL_STATIC_DRAW );
@@ -192,7 +192,7 @@ void ClothSimulationApp::setupBuffers()
     mLineIndices->unmap();
 }
 
-void ClothSimulationApp::setupGlsl()
+void ClothSimApp::setupGlsl()
 {
     // These are the names of our out going vertices. GlslProg needs to
     // know which attributes should be captured by Transform FeedBack.
@@ -202,7 +202,7 @@ void ClothSimulationApp::setupGlsl()
     });
     
     gl::GlslProg::Format updateFormat;
-    updateFormat.vertex( loadResource( "update1.vert" ) )
+    updateFormat.vertex( loadResource( "update.vert" ) )
 				// Because we have separate buffers with which
 				// to capture attributes, we're using GL_SEPERATE_ATTRIBS
 				.feedbackFormat( GL_SEPARATE_ATTRIBS )
@@ -221,7 +221,7 @@ void ClothSimulationApp::setupGlsl()
     mRenderGlsl = gl::GlslProg::create( renderFormat );
 }
 
-void ClothSimulationApp::update()
+void ClothSimApp::update()
 {
     if( ! mUpdate ) return;
     
@@ -259,10 +259,10 @@ void ClothSimulationApp::update()
         gl::endTransformFeedback();
     }
     
-
+    
 }
 
-void ClothSimulationApp::draw()
+void ClothSimApp::draw()
 {
     gl::clear( Color( 0, 0, 0 ) );
     
@@ -295,10 +295,10 @@ void ClothSimulationApp::draw()
     mParams->draw();
 }
 
-void ClothSimulationApp::mouseDown( MouseEvent event )
+void ClothSimApp::mouseDown( MouseEvent event )
 {
     if( event.isRightDown() ) {
-//        mCamUi.mouseDrag( event.getPos(), true, false, false );
+        //        mCamUi.mouseDrag( event.getPos(), true, false, false );
         mUpdateGlsl->uniform( "trigger", true );
         updateRayPosition( event.getPos(), true );
     } else {
@@ -307,7 +307,7 @@ void ClothSimulationApp::mouseDown( MouseEvent event )
     }
 }
 
-void ClothSimulationApp::mouseDrag( MouseEvent event )
+void ClothSimApp::mouseDrag( MouseEvent event )
 {
     if( event.isRightDown() )
         updateRayPosition( event.getPos(), true );
@@ -315,12 +315,12 @@ void ClothSimulationApp::mouseDrag( MouseEvent event )
         updateRayPosition( event.getPos(), true );
 }
 
-void ClothSimulationApp::mouseUp( MouseEvent event )
+void ClothSimApp::mouseUp( MouseEvent event )
 {
     updateRayPosition( event.getPos(), false );
 }
 
-void ClothSimulationApp::updateRayPosition( const ci::ivec2 &mousePos, bool useDistance )
+void ClothSimApp::updateRayPosition( const ci::ivec2 &mousePos, bool useDistance )
 {
     auto ray = mCam.generateRay( mousePos, getWindowSize() );
     auto dist = ci::distance( mCam.getEyePoint(), vec3() );
@@ -328,7 +328,7 @@ void ClothSimulationApp::updateRayPosition( const ci::ivec2 &mousePos, bool useD
     mUpdateGlsl->uniform( "rayPosition", rayPosition );
 }
 
-void ClothSimulationApp::setupParams()
+void ClothSimApp::setupParams()
 {
     static vec3 gravity = vec3( 0.0, -0.08, 0.0 );
     static float restLength = 1.0;
@@ -349,12 +349,12 @@ void ClothSimulationApp::setupParams()
                                            mUpdateGlsl->uniform( "rest_length", restLength );
                                        });
     mParams->addParam( "Damping Constant", &dampingConst )
-    .min( 1.5f ).max( 25.0f ).updateFn(
+    .min( 0.0f ).max( 0.05f ).updateFn(
                                        [&](){
                                            mUpdateGlsl->uniform( "damping", dampingConst );
                                        });
     mParams->addParam( "Spring Constant", &springConstant )
-    .min( 0.1f ).max( 17.0f ).updateFn(
+    .min( 30.0f ).max( 100.0f ).updateFn(
                                        [&](){
                                            mUpdateGlsl->uniform( "spring", springConstant );
                                        });
@@ -384,7 +384,7 @@ void ClothSimulationApp::setupParams()
     mParams->addText( "Right Mouse Button Rotates" );
 }
 
-CINDER_APP( ClothSimulationApp, RendererGl(),
+CINDER_APP( ClothSimApp, RendererGl(),
            [&]( App::Settings *settings ) {
                settings->setWindowSize( 1280, 720 );
            })
