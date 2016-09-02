@@ -271,6 +271,8 @@ void ClothSimApp::draw()
 	gl::setMatrices(mCam);
     gl::setDefaultShaderVars();
     
+    gl::ScopedDepth depth( true );
+    
     int num_cells = (POINTS_X - 1) * (POINTS_Y - 1);
     int num_tris = num_cells * 2;
     int num_indices = num_tris * 3;
